@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { SupabaseService } from '../../services/supabase.service';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -8,15 +8,18 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.page.html',
+  styleUrls: ['./chat.page.scss'],
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class ChatPage implements OnInit, OnDestroy {
+  @ViewChild('content') content!: ElementRef;
+
   messages: any[] = [];
   newMessage = '';
   private subscription: Subscription | null = null;
 
-  constructor(private supabase: SupabaseService) {}
+  constructor(public supabase: SupabaseService) {}
 
   ngOnInit() {
     this.loadMessages();
@@ -24,7 +27,14 @@ export class ChatPage implements OnInit, OnDestroy {
     // Escuchar mensajes nuevos en tiempo real
     this.supabase.listenMessages((msg) => {
       this.messages.push(msg);
+      setTimeout(() => this.scrollToBottom(), 100);
     });
+  }
+
+  scrollToBottom() {
+    if (this.content && this.content.nativeElement) {
+      this.content.nativeElement.scrollToBottom(300);
+    }
   }
 
   ngOnDestroy() {
